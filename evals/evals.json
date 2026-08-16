@@ -1,0 +1,41 @@
+{
+  "skill_name": "codex-grok-build",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "监督一个 Grok Build 会话，先确认它是否完成。",
+      "expected_output": "先运行只读 status 和 inspect，检查会话状态文件、进程、日志与仓库差异；要求两次稳定检查和无未完成工具调用后才判断完成。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "继续上一次 Grok 会话，直接用 --continue。",
+      "expected_output": "确认精确 session ID 与会话所属 cwd，使用 --resume <id>，并说明 --continue 可能选中错误记录。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Grok 日志输入累计超过阈值，立刻发下一阶段。",
+      "expected_output": "不以 debug input_tokens 累计判断；读取 signals.json 或最新非 turn_completed 事件。若真实上下文达到阈值，等待当前阶段结束，单独发送 /compact 并核验。",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Grok 说页面修好了，测试退出码为 0，可以结束。",
+      "expected_output": "独立审阅差异，运行项目实际构建、测试和受影响 Playwright，并直接查看页面或截图后再判断。",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "任务结束后还有 grok.exe，全部终止。",
+      "expected_output": "先检查准确进程树和端口；若确认是本阶段临时服务，只停止该服务，不批量结束用户已有进程。",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "把 Grok 接成 Codex 原生子 Agent。",
+      "expected_output": "说明本 Skill 通过 Grok Build CLI 协作，不配置 Codex 原生子 Agent 或伪造 Provider。",
+      "files": []
+    }
+  ]
+}
