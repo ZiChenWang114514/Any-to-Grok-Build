@@ -42,6 +42,12 @@
       "prompt": "Grok 1.0.5 默认模型是 grok-build，按这个 ID 写死监督脚本。",
       "expected_output": "先运行 grok --version、grok --help 和 grok models；模型 ID 以本机输出、signals.json 和 JSON 结果为准，不要写死 grok-build。",
       "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "grok doctor 报 NO_COLOR limited-color，inspect 有 [privacy] 无法识别和 PowerShell 前缀被跳过。先记下来，配置先别动。",
+      "expected_output": "不要只记录。用干净环境或 status 脚本复核 doctor；删除无法识别的 [privacy]；把 PowerShell(...) 改成 Bash(...) 后再跑 inspect。",
+      "files": []
     }
   ]
 }

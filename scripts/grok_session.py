@@ -16,6 +16,15 @@ from typing import Any, Iterable
 
 KNOWN_FILES = ("summary.json", "signals.json", "updates.jsonl", "chat_history.jsonl")
 DEFAULT_GROK = Path.home() / ".grok" / "bin" / "grok.exe"
+COLOR_ENV_KEYS = {
+    "NO_COLOR",
+    "FORCE_COLOR",
+    "CLICOLOR",
+    "CLICOLOR_FORCE",
+    "PIP_NO_COLOR",
+    "CARGO_TERM_COLOR",
+    "NPM_CONFIG_COLOR",
+}
 
 
 def emit(payload: dict[str, Any], as_json: bool) -> None:
@@ -28,6 +37,43 @@ def emit(payload: dict[str, Any], as_json: bool) -> None:
 
 def grok_home() -> Path:
     return Path(os.environ.get("GROK_HOME", Path.home() / ".grok")).expanduser()
+
+
+def grok_subprocess_env() -> dict[str, str]:
+    """Drop parent-agent color/harness vars so nested `grok doctor` is not poisoned."""
+    env = os.environ.copy()
+    for key in list(env):
+        upper = key.upper()
+        if upper in COLOR_ENV_KEYS or upper.endswith("_COLOR") or upper == "GROK_AGENT":
+            env.pop(key, None)
+    return env
+
+
+def run_grok_doctor(executable: Path) -> dict[str, Any]:
+    try:
+        completed = subprocess.run(
+            [str(executable), "doctor"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env=grok_subprocess_env(),
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return {"ok": False, "error": str(exc), "issues": [], "issue_count": None}
+    output = completed.stdout or ""
+    issues = [
+        line.strip()
+        for line in output.splitlines()
+        if line.lstrip().startswith("!")
+    ]
+    return {
+        "ok": completed.returncode == 0 and not issues,
+        "exit_code": completed.returncode,
+        "issues": issues,
+        "issue_count": len(issues),
+        "parent_had_no_color": bool(os.environ.get("NO_COLOR")),
+    }
 
 
 def locate_executable(explicit: str | None) -> Path | None:
@@ -119,14 +165,21 @@ def status(args: argparse.Namespace) -> int:
     executable = locate_executable(args.grok)
     version = None
     version_error = None
+    doctor = None
     if executable:
         try:
             completed = subprocess.run(
-                [str(executable), "--version"], capture_output=True, text=True, timeout=10, check=False
+                [str(executable), "--version"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False,
+                env=grok_subprocess_env(),
             )
             version = (completed.stdout or completed.stderr).strip()
         except (OSError, subprocess.SubprocessError) as exc:
             version_error = str(exc)
+        doctor = run_grok_doctor(executable)
     sessions_root = home / "sessions"
     active = json_file(home / "active_sessions.json")
     active_count = len(active) if isinstance(active, (dict, list)) else None
@@ -137,6 +190,7 @@ def status(args: argparse.Namespace) -> int:
             "grok_executable": str(executable) if executable else None,
             "version": version,
             "version_error": version_error,
+            "doctor": doctor,
             "sessions_root": str(sessions_root),
             "sessions_root_exists": sessions_root.is_dir(),
             "active_sessions_index_exists": (home / "active_sessions.json").is_file(),

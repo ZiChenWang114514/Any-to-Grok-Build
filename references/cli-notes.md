@@ -36,4 +36,4 @@
 
 1.0.4 起可能在主回答成功后额外输出 session title、proactive bundle 或 telemetry 的后台同步 warning。1.0.5 冒烟中 stderr 可以为空，但 signals 仍可能显示待上传队列。主回答、退出码、debug 会话事件和 signals 应分别判断；`error decoding response body` 若只出现在后台同步且主回答完整，可记录为非阻断 warning；若出现在模型响应重试并最终没有主回答，则检查本地代理、Clash 路由和响应流。
 
-`grok doctor` 可能报告 `NO_COLOR` 导致的 limited-color，或终端能力 unavailable；`grok inspect` 可能报告 `[privacy]` 无法识别、旧 Claude `PowerShell(...)` 权限前缀，以及版本行里的 `[unknown]`。这些要与当前 headless 命令是否成功分开判断。
+`grok doctor` 在 Grok/agent 子进程里会继承 `NO_COLOR` 并误报 limited-color。用本 Skill 的 `status` 脚本或干净 PowerShell 运行；干净环境下应为 0 issues。`grok inspect` 的 Config Warnings 里若出现无法识别的键（1.0.5 已废弃 `[privacy]`），直接从 `~/.grok/config.toml` 删除。权限规则只接受 `Bash`、`Read`、`Edit`、`Grep`、`MCPTool`、`WebFetch`、`WebSearch`；把 Claude 的 `PowerShell(...)` 改写成 `Bash(...)`，不要留着当 warning。inspect 版本行里的 `[unknown]` 表示更新通道没有给出 stable 版本，不是会话失败。`[ui] fork_secondary_model` 不要再写已下线的 `grok-build`，应使用 `grok models` 里存在的 ID。

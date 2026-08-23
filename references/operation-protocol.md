@@ -65,7 +65,9 @@ Grok 的文字说明可作为线索，不能代替结果。遇到测试绿但页
 
 - CLI 缺失：报告实际路径和 `status` 结果；不要下载、登录或改代理，除非用户要求。
 - 登录或网络失败：先运行 `grok doctor`、核对 Grok 自身网络设置；若使用本地代理，确认代理进程、监听地址和 Grok 的实际连接路径。
-- 旧 Claude 权限规则警告：若没有阻断当前命令，仅记录；不要修改用户的 Claude 设置。
+- 旧 Claude 权限规则警告：`PowerShell(...)` 前缀会被 Grok 跳过。把它改成 `Bash(...)` 后再跑 `grok inspect`，确认不再出现 unknown tool prefix。修改前备份 `~/.claude/settings.local.json`。
+- 无法识别的配置键：从 `~/.grok/config.toml` 删除（1.0.5 的 `[privacy]` 已无效）。修改前备份该文件。
+- `grok doctor` 报 `NO_COLOR`：先确认是否在 Grok/agent 会话内运行；用 `grok_session.py status` 或干净 PowerShell 复核，不要把父进程环境变量当成主机故障。
 - `signals.json` 没有新数值：同时查看 events、updates、chat history 与 debug，报告哪类证据缺失。
 - `sessions list` 为空：改用创建会话时的 `--cwd`，并检查 `%USERPROFILE%\.grok\sessions` 的实际目录。
 - 1.0.5 已复核：使用 `grok --help` 重新确认参数；`--resume`、`--prompt-file`、`--output-format plain` 和 `--debug-file` 在 `grok 1.0.5 (5115b46bc9)` 已验证可用。可用新临时工作目录做一次 `--prompt-file ... --output-format json` 加 `--resume <id>` 测试，不要用现有生产会话做参数试验。

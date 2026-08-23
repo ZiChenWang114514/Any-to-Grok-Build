@@ -15,7 +15,7 @@ description: 在用户要求安装、登录、检查、启动、恢复、监督�
    python <skill-dir>\scripts\grok_session.py status --json
    ```
 
-2. 找到 Grok 可执行文件后先运行 `--help`，以本机版本的参数为准。常见 Windows 路径为 `%USERPROFILE%\.grok\bin\grok.exe`，不可假定版本、模型或会话格式始终相同。对 1.0.4 及更新版本，额外运行 `grok doctor`、`grok inspect` 和 `grok models`；它们可能报告终端能力、旧配置 warning 或与用户指南不同的模型 ID，这些提示要与会话失败分开判断。
+2. 找到 Grok 可执行文件后先运行 `--help`，以本机版本的参数为准。常见 Windows 路径为 `%USERPROFILE%\.grok\bin\grok.exe`，不可假定版本、模型或会话格式始终相同。对 1.0.4 及更新版本，额外运行 `grok doctor`、`grok inspect` 和 `grok models`。从 Grok/agent 会话里直接跑 `grok doctor` 会继承父进程的 `NO_COLOR`，从而误报 limited-color；应使用本 Skill 的 `status` 脚本（它会清掉这些变量）或在干净 PowerShell 中运行。`grok inspect` 若报告无法识别的配置键（例如已废弃的 `[privacy]`），应从 `~/.grok/config.toml` 删除该键。若权限规则因 `PowerShell(...)` 前缀被跳过，应改写成 Grok 识别的 `Bash(...)`。这些配置问题要修掉，不要只记录。
 3. 让用户提供仓库路径、目标和会话 ID；没有这些信息时，只汇报诊断与所缺信息。不要恢复历史会话，也不要启动定时监测。
 4. 先读仓库指令、`git status --short`、准确差异与已有测试命令。保留所有既有改动。
 
@@ -77,7 +77,7 @@ python <skill-dir>\scripts\grok_session.py wait --session-id <id> --seconds 10 -
 
 `scripts/grok_session.py` 只读：
 
-- `status`：检查 Grok CLI、`GROK_HOME`、会话目录和活动会话索引。
+- `status`：检查 Grok CLI、`GROK_HOME`、会话目录、活动会话索引，并在干净环境中运行 `grok doctor`（避免父进程 `NO_COLOR` 污染）。
 - `inspect --session-id`：定位会话，汇总关键文件、上下文读数、压缩计数、模型/agent 线索与最近事件。
 - `wait --session-id --seconds 10`：比较两次文件快照，给出稳定性证据。
 - 1.0.5 已复核：先确认 `--version`、`--resume`、`--prompt-file`、`--output-format plain` 和 `--debug-file` 仍在 `--help` 中。可在新临时工作目录中用 `--prompt-file ... --output-format json` 获取 `sessionId`，再用原阶段命令恢复该 ID，做兼容性冒烟测试，避免触碰用户现有会话。不要写死 `grok-build`：以 `grok models`、`signals.json` 的 `primaryModelId` 和 JSON 结果里的 `modelUsage` 为准。
