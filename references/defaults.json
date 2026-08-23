@@ -1,0 +1,6 @@
+{
+  "request_timeout_seconds": 1800,
+  "smoke_timeout_seconds": 180,
+  "compact_threshold_tokens": 250000,
+  "smoke_reply": "GROK_SESSION_OK"
+}

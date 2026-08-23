@@ -1,4 +1,4 @@
 interface:
-  display_name: "Codex Grok Build"
-  short_description: "用于诊断、恢复与监督 Grok Build CLI 会话"
-  default_prompt: "使用 $codex-grok-build 检查并协作处理这个 Grok Build 会话。"
+  display_name: "Codex Grok Build Session"
+  short_description: "启动、继续、监督并验证 Grok Build CLI 会话"
+  default_prompt: "使用 $codex-grok-build 检查当前状态，并在准确工作目录中继续这个 Grok Build 任务。"

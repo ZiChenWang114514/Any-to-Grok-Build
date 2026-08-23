@@ -1,74 +1,144 @@
-# Grok Build 会话操作协议
+# Grok Build 操作说明
 
-## 会话识别
+## 工作目录与会话
 
-每次先确认三项：Grok session ID、创建会话时的工作目录、实际开发仓库。三者可以不同。会话目录的父目录经过 URL 编码；它能帮助判断恢复时应使用的 `--cwd`，但仍应以历史命令和状态文件交叉确认。
+每次确认三项：session ID、创建会话时的工作目录、实际开发仓库。它们可能不同。Grok 会话通常保存在：
 
-```powershell
-& $grokExe --cwd <session-owner-cwd> sessions list -n 20
-& $grokExe --cwd <session-owner-cwd> --resume <session-id> --prompt-file <file> ...
+```text
+%USERPROFILE%\.grok\sessions\<编码后的工作目录>\<session-id>\
 ```
 
-`grok sessions list` 在错误的当前目录可能显示空列表。不要据此认定本机没有会话。
+主要文件包括：
 
-## 发送阶段指令
+| 文件 | 用途 |
+|---|---|
+| `summary.json` | 会话目录、模型、agent、标题与更新时间 |
+| `signals.json` | 上下文、压缩次数、工具统计与 telemetry 状态 |
+| `updates.jsonl` | 事件、工具状态、最终回复与 `turn_completed` |
+| `chat_history.jsonl` | 对话、推理、工具调用与工具结果 |
 
-阶段文件应包括：
+恢复会话时必须使用原工作目录和准确 ID。`--continue` 与省略 ID 的 `--resume` 都可能选择当前目录最近一条记录，不适合监督脚本。
 
-1. 当前目标及已验证事实；
-2. 需要检查的文件与数据；
-3. 明确的禁止操作；
-4. 验收顺序和需要检查的视觉区域；
-5. 一个用于确认本阶段完成的唯一标记。
+## 辅助脚本
 
-保持一项可验证任务为一个阶段。测试失败时，下一份说明只处理已经定位的失败，不要将不相关重构混入其中。
-
-推荐 PowerShell 模板：
+### 状态检查
 
 ```powershell
-& $grokExe --cwd $sessionOwnerCwd --resume $sessionId `
-  --prompt-file $phaseFile --output-format plain --debug --debug-file $debugFile `
-  1> $stdoutFile 2> $stderrFile
-if ($LASTEXITCODE -ne 0) { throw "Grok exited with $LASTEXITCODE" }
+python <skill-dir>\scripts\grok_session.py status --json
 ```
 
-先创建文本文件，再调用 `--prompt-file`。不要把长提示、JSON 或含中文的复杂内容直接拼入 `-p` 参数。
+状态检查包括 CLI 版本、必需参数、模型列表、干净环境中的 `grok doctor`、会话目录和活动 PID。它保留代理变量，同时移除父 agent 注入的颜色变量与 `GROK_AGENT`，避免嵌套调用产生误报。
 
-## 判断是否结束
+### 列出与检查会话
 
-需要同时满足：
+```powershell
+python <skill-dir>\scripts\grok_session.py list --dir <cwd> --limit 20 --json
+python <skill-dir>\scripts\grok_session.py inspect --session-id <id> --json
+```
 
-- 出现最终回答或 `turn_completed`；
-- 没有未完成的工具调用；
-- `updates.jsonl` 与 `chat_history.jsonl` 在约 10 秒内保持不变；
-- stdout、stderr、debug 与进程状态不显示仍在工作的迹象。
+`list` 从本地会话目录读取准确工作目录对应的记录。`inspect` 同时读取状态文件、活动索引和最近事件，并返回：
 
-1.0.4 起可能在主回答成功、退出码为 0 后，继续报告 session title、proactive bundle 或 telemetry 的后台同步 warning。1.0.5 冒烟中 stderr 可以为空，但 `signals.json` 仍可能留下待上传 telemetry 计数。分别检查 stdout、stderr、debug 和 signals；主回答完整时，这类 warning 或待同步计数记录为非阻断问题。若模型响应本身持续重试并且没有主回答，再检查本地代理和响应流。
+- `session_owner_cwd` 与模型/agent；
+- `pending_tool_call_ids` 与 `completion_candidate`；
+- 当前上下文、实际窗口、压缩次数；
+- `effective_compact_threshold_tokens` 与 `compact_recommended`；
+- 活动 PID 是否仍存在。
 
-`grok.exe` 仍存在并不总是表示模型仍在思考。先检查子进程和端口；前端测试常留下 Vite 服务。停止服务前确认启动时间、父进程和监听端口只属于本阶段。
+### 创建或继续会话
+
+```powershell
+python <skill-dir>\scripts\grok_session.py invoke `
+  --dir <repo> --prompt-file <phase.txt> --json
+
+python <skill-dir>\scripts\grok_session.py invoke `
+  --dir <owner-cwd> --session-id <id> `
+  --prompt-file <phase.txt> --json
+```
+
+脚本通过 `--output-format json` 获取准确 `sessionId`，并为每次调用保存：
+
+```text
+prompt.txt        # 仅当使用 --prompt 或 smoke-test 时生成
+stdout.log
+stderr.log
+debug.log
+```
+
+普通调用保留会话和日志。可用 `--log-dir` 指定日志目录。用户明确选择时可以加入：
+
+```text
+--model <id>
+--agent <name-or-file>
+--reasoning-effort <level>
+--permission-mode <mode>
+--always-approve
+--max-turns <n>
+--timeout <seconds>
+```
+
+`--always-approve` 允许工具无人值守执行，使用前必须确认用户已经授权该目录和任务。未获授权时保留 Grok 当前权限行为，或使用 `--permission-mode plan` 做只读分析。
+
+### 冒烟测试
+
+```powershell
+python <skill-dir>\scripts\grok_session.py smoke-test `
+  --dir <safe-dir> --json
+```
+
+测试流程：
+
+1. 读取当前 CLI 和默认模型；
+2. 创建禁止工具、子 agent、规划和网页搜索的单轮会话；
+3. 验证精确回复、JSON、实际模型与会话持久化；
+4. 使用本次返回的精确 ID 删除测试会话；
+5. 验证会话目录已消失，并删除脚本创建的临时日志。
+
+任何一步失败都返回非零退出码。使用 `--log-dir` 时保留日志供检查。
+
+## 超时与中断
+
+`invoke` 使用 `defaults.json` 的请求超时，也允许本次调用用 `--timeout` 覆盖。超时后脚本只终止自己启动的准确 PID 及其子进程，并报告：
+
+- 进程 PID；
+- 新会话候选 ID；
+- stdout/stderr 尾部；
+- 日志目录。
+
+客户端超时不能单独证明模型失败。先检查候选会话、状态文件、活动 PID 与仓库差异，再决定继续、中止或发送修正说明。不要自动重发原任务，以免重复编辑。
+
+## 阶段完成判断
+
+阶段文件应包含目标、已确认事实、允许修改的文件、禁止操作、验收命令和视觉检查区域。每次只安排一项可验证任务。
+
+判断完成需要组合证据：
+
+1. 出现最终回复或 `turn_completed`；
+2. `pending_tool_call_ids` 为空；
+3. `updates.jsonl` 与 `chat_history.jsonl` 在短时间内保持稳定；
+4. stdout、stderr 和 debug 没有显示仍在工作；
+5. 活动进程、子进程和端口状态与任务一致。
+
+`wait` 返回的 `completion_candidate=true` 只表示事件和文件稳定条件成立。仍需检查日志、进程、仓库结果与测试。
+
+Grok 1.0.4 起可能在主回答成功后报告 session title、proactive bundle、telemetry 或 resident actor warning。主回答完整、退出码为 0、`turn_completed` 已出现时，可记录为后台问题。模型响应持续重试、回复缺失或退出码非零时，再按网络/代理故障处理。
 
 ## 上下文维护
 
-读取即时上下文时优先使用 `signals.json` 的 `contextTokensUsed` 或 `contextWindowUsage`，并同时记录 `contextWindowTokens`（若存在）。若它暂时没有刷新，读取最新非 `turn_completed` agent/tool 事件的 `_meta.totalTokens`。debug 中的请求 `input_tokens` 是请求计数，不能相加后当作会话上下文。
+即时值按以下顺序读取：
 
-达到 250000 后，等待当前阶段完成；发送只含 `/compact` 的单独阶段；记录压缩前后的状态。后续阶段必须在压缩核验成功后才开始。
+1. `signals.json.contextTokensUsed`；
+2. `signals.json.contextWindowUsage` 与 `contextWindowTokens`；
+3. 最新非 `turn_completed` agent/tool 事件的 `_meta.totalTokens`。
 
-压缩核验优先看 `compactionCount`。其他证据须组合使用：debug 中的 builtin compact、持久化 checkpoint、chat history 替换或缩短、compaction 文件夹中新片段、以及后续事件上下文显著降低。
+整轮累计 `totalTokens` 和 debug `input_tokens` 不能当作当前上下文。提醒值由 `defaults.json.compact_threshold_tokens` 给出；若实际窗口更小，辅助脚本使用窗口的 80% 作为较早提醒值并明确报告。
 
-## 独立核验
+达到提醒值后等待当前阶段结束，再单独发送 `/compact`。核验优先确认 `compactionCount` 增加；若 signals 没有刷新，应组合检查 builtin compact、checkpoint、聊天记录替换或缩短，以及后续上下文下降。
 
-先查 `git status --short` 与目标差异，区分既有改动和本阶段变化。根据项目真实脚本依次执行生产构建、单元测试和受影响端到端测试；端到端测试须覆盖桌面与手机视口时分别运行。启动预览后，直接查看截图和页面：首屏、完整页面、窄屏、关键交互状态和控制台错误都应纳入检查。
+## 配置、网络与进程
 
-Grok 的文字说明可作为线索，不能代替结果。遇到测试绿但页面不对时，以直接观察为准；遇到页面看似正确但测试失败时，先理解断言是否在验证真实行为，再决定实现或测试调整。
-
-## 常见情况
-
-- CLI 缺失：报告实际路径和 `status` 结果；不要下载、登录或改代理，除非用户要求。
-- 登录或网络失败：先运行 `grok doctor`、核对 Grok 自身网络设置；若使用本地代理，确认代理进程、监听地址和 Grok 的实际连接路径。
-- 旧 Claude 权限规则警告：`PowerShell(...)` 前缀会被 Grok 跳过。把它改成 `Bash(...)` 后再跑 `grok inspect`，确认不再出现 unknown tool prefix。修改前备份 `~/.claude/settings.local.json`。
-- 无法识别的配置键：从 `~/.grok/config.toml` 删除（1.0.5 的 `[privacy]` 已无效）。修改前备份该文件。
-- `grok doctor` 报 `NO_COLOR`：先确认是否在 Grok/agent 会话内运行；用 `grok_session.py status` 或干净 PowerShell 复核，不要把父进程环境变量当成主机故障。
-- `signals.json` 没有新数值：同时查看 events、updates、chat history 与 debug，报告哪类证据缺失。
-- `sessions list` 为空：改用创建会话时的 `--cwd`，并检查 `%USERPROFILE%\.grok\sessions` 的实际目录。
-- 1.0.5 已复核：使用 `grok --help` 重新确认参数；`--resume`、`--prompt-file`、`--output-format plain` 和 `--debug-file` 在 `grok 1.0.5 (5115b46bc9)` 已验证可用。可用新临时工作目录做一次 `--prompt-file ... --output-format json` 加 `--resume <id>` 测试，不要用现有生产会话做参数试验。
-- 模型 ID：先运行 `grok models`。不要假定默认模型仍是用户指南中的 `grok-build`。
+- `grok doctor` 报颜色问题：用 `status` 脚本或干净 PowerShell复核，避免父 agent 的 `NO_COLOR` 影响结果。
+- `grok inspect` 报旧配置键或 Claude 权限格式：先判断是否影响当前任务。用户要求修复时，保存准确配置备份，再做范围明确的修改并复核。
+- 登录或网络失败：检查 `grok models`、认证状态、本地代理进程、监听地址和 Grok 实际连接路径。不要在日志中显示令牌。
+- `sessions list` 为空：检查创建会话时的工作目录，或使用辅助脚本的 `list --dir`。
+- `grok.exe` 仍存在：读取 `active_sessions.json`、PID、父子进程和端口。Vite 等服务可能使会话进程保持运行；只处理能够确认属于本阶段的进程。
+- 配置文件、代理规则、登录状态、正式会话和用户服务均属于用户数据。修改或删除前需要明确授权。
