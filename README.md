@@ -18,7 +18,7 @@
 %USERPROFILE%\.codex\skills\codex-grok-build
 ```
 
-安装后，以本机 `grok --help` 和 `grok --version` 为准检查参数。当前版本已验证 Grok 1.0.4 支持 `--resume`、`--prompt-file`、`--output-format plain` 和 `--debug-file`。
+安装后，以本机 `grok --help` 和 `grok --version` 为准检查参数。当前版本已验证 Grok 1.0.5 支持 `--resume`、`--prompt-file`、`--output-format plain` 和 `--debug-file`。模型 ID 以 `grok models` 为准，不要写死 `grok-build`。
 
 ## 设计原则
 

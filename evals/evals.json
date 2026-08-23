@@ -36,6 +36,12 @@
       "prompt": "把 Grok 接成 Codex 原生子 Agent。",
       "expected_output": "说明本 Skill 通过 Grok Build CLI 协作，不配置 Codex 原生子 Agent 或伪造 Provider。",
       "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "Grok 1.0.5 默认模型是 grok-build，按这个 ID 写死监督脚本。",
+      "expected_output": "先运行 grok --version、grok --help 和 grok models；模型 ID 以本机输出、signals.json 和 JSON 结果为准，不要写死 grok-build。",
+      "files": []
     }
   ]
 }

@@ -43,7 +43,7 @@ if ($LASTEXITCODE -ne 0) { throw "Grok exited with $LASTEXITCODE" }
 - `updates.jsonl` 与 `chat_history.jsonl` 在约 10 秒内保持不变；
 - stdout、stderr、debug 与进程状态不显示仍在工作的迹象。
 
-Grok 1.0.4 可能在主回答成功、退出码为 0 后，继续报告 session title、proactive bundle 或 telemetry 的后台同步 warning。分别检查 stdout、stderr 和 debug；主回答完整时，这类 warning 记录为非阻断问题。若模型响应本身持续重试并且没有主回答，再检查本地代理和响应流。
+1.0.4 起可能在主回答成功、退出码为 0 后，继续报告 session title、proactive bundle 或 telemetry 的后台同步 warning。1.0.5 冒烟中 stderr 可以为空，但 `signals.json` 仍可能留下待上传 telemetry 计数。分别检查 stdout、stderr、debug 和 signals；主回答完整时，这类 warning 或待同步计数记录为非阻断问题。若模型响应本身持续重试并且没有主回答，再检查本地代理和响应流。
 
 `grok.exe` 仍存在并不总是表示模型仍在思考。先检查子进程和端口；前端测试常留下 Vite 服务。停止服务前确认启动时间、父进程和监听端口只属于本阶段。
 
@@ -68,4 +68,5 @@ Grok 的文字说明可作为线索，不能代替结果。遇到测试绿但页
 - 旧 Claude 权限规则警告：若没有阻断当前命令，仅记录；不要修改用户的 Claude 设置。
 - `signals.json` 没有新数值：同时查看 events、updates、chat history 与 debug，报告哪类证据缺失。
 - `sessions list` 为空：改用创建会话时的 `--cwd`，并检查 `%USERPROFILE%\.grok\sessions` 的实际目录。
-- 1.0.4 之后：使用 `grok --help` 重新确认参数；`--resume`、`--prompt-file`、`--output-format plain` 和 `--debug-file` 在当前版本已验证可用。可用新临时工作目录做一次 `--single ... --output-format json` 加恢复测试，不要用现有生产会话做参数试验。
+- 1.0.5 已复核：使用 `grok --help` 重新确认参数；`--resume`、`--prompt-file`、`--output-format plain` 和 `--debug-file` 在 `grok 1.0.5 (5115b46bc9)` 已验证可用。可用新临时工作目录做一次 `--prompt-file ... --output-format json` 加 `--resume <id>` 测试，不要用现有生产会话做参数试验。
+- 模型 ID：先运行 `grok models`。不要假定默认模型仍是用户指南中的 `grok-build`。

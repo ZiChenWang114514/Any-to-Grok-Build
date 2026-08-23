@@ -168,6 +168,9 @@ def inspect(args: argparse.Namespace) -> int:
     context_usage = list(values_named(signals, {"contextWindowUsage"})) if signals is not None else []
     context_window_tokens = list(values_named(signals, {"contextWindowTokens"})) if signals is not None else []
     compactions = list(values_named(signals, {"compactionCount"})) if signals is not None else []
+    primary_models = list(values_named(signals, {"primaryModelId"})) if signals is not None else []
+    summary_model = summary.get("current_model_id") if isinstance(summary, dict) else None
+    summary_agent = summary.get("agent_name") if isinstance(summary, dict) else None
     event_paths = [session_dir / "updates.jsonl", session_dir / "chat_history.jsonl"]
     emit(
         {
@@ -180,6 +183,9 @@ def inspect(args: argparse.Namespace) -> int:
             "signals_contextWindowUsage": context_usage[-1] if context_usage else None,
             "signals_contextWindowTokens": context_window_tokens[-1] if context_window_tokens else None,
             "signals_compactionCount": compactions[-1] if compactions else None,
+            "signals_primaryModelId": primary_models[-1] if primary_models else None,
+            "summary_current_model_id": summary_model if isinstance(summary_model, str) else None,
+            "summary_agent_name": summary_agent if isinstance(summary_agent, str) else None,
             "latest_non_turn_completed_totalTokens": latest_non_completed_total_tokens(event_paths),
             "recent_event_markers": recent_markers(event_paths),
             "summary_available": summary is not None,
