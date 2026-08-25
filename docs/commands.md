@@ -1,19 +1,19 @@
-# 命令手册
+# Command reference
 
-[README](../README.md) · [快速开始](./getting-started.md) · [会话生命周期](./session-lifecycle.md) · [故障诊断](./troubleshooting.md)
+[README](../README.md) · [Getting started](./getting-started.md) · [Session lifecycle](./session-lifecycle.md) · [Troubleshooting](./troubleshooting.md) · [简体中文](./zh-CN/commands.md)
 
-以下示例假定：
+The examples assume:
 
 ```powershell
 $skill = "$env:USERPROFILE\.codex\skills\codex-grok-build"
 $helper = "$skill\scripts\grok_session.py"
 ```
 
-所有子命令都支持 `--json`。成功时通常以状态 `0` 结束；诊断失败、输入错误、Grok 调用失败或清理失败时，进程以非零状态结束。
+Every subcommand supports `--json`. Successful commands normally exit with status `0`; invalid input, failed diagnostics, Grok invocation errors, and cleanup failures return a non-zero status.
 
 ## `status`
 
-检查 Grok 可执行文件、版本、关键参数、模型、doctor、会话目录和活动会话。
+Checks the Grok executable, version, required flags, models, doctor result, session store, and active sessions.
 
 ```powershell
 python $helper status --json
@@ -26,7 +26,7 @@ python $helper status --grok "C:\custom\grok.exe" --json
 python $helper list --dir "C:\path\to\repo" --limit 20 --json
 ```
 
-`--dir` 是创建会话时使用的工作目录；`--limit` 范围为 1–500，默认 20。
+`--dir` is the working directory used to create the session. `--limit` accepts 1–500 and defaults to 20.
 
 ## `inspect`
 
@@ -34,15 +34,15 @@ python $helper list --dir "C:\path\to\repo" --limit 20 --json
 python $helper inspect --session-id "<session-id>" --json
 ```
 
-重要字段包括：
+Important fields include:
 
-- `session_owner_cwd`：会话所属工作目录；
-- `summary_current_model_id`、`summary_agent_name`：会话摘要中的模型和 Agent；
-- `activity.pending_tool_call_ids`：尚未结束的工具调用；
-- `activity.completion_candidate`：根据事件形成的完成候选；
-- `signals_contextTokensUsed` 与 `signals_contextWindowTokens`；
-- `compact_recommended` 与 `signals_compactionCount`；
-- `active_registry_entries`：活动索引中的 PID 与存活状态。
+- `session_owner_cwd`: owner directory recorded for the session;
+- `summary_current_model_id` and `summary_agent_name`: model and agent from the summary;
+- `activity.pending_tool_call_ids`: tool calls without a terminal state;
+- `activity.completion_candidate`: event-based completion candidate;
+- `signals_contextTokensUsed` and `signals_contextWindowTokens`;
+- `compact_recommended` and `signals_compactionCount`;
+- `active_registry_entries`: active PIDs and liveness information.
 
 ## `wait`
 
@@ -50,7 +50,7 @@ python $helper inspect --session-id "<session-id>" --json
 python $helper wait --session-id "<session-id>" --seconds 10 --json
 ```
 
-`stable=true` 仅表示检查期间目标文件没有变化。还需要确认没有待处理工具调用，并检查日志、进程和仓库结果。
+`stable=true` only means the target files did not change during the interval. You must still check pending tools, logs, processes, and repository results.
 
 ## `invoke`
 
@@ -60,28 +60,28 @@ python $helper invoke `
   --prompt-file "C:\path\to\phase.txt" --json
 ```
 
-继续会话时增加 `--session-id "<session-id>"`。`--prompt` 与 `--prompt-file` 二选一，较长任务优先使用 UTF-8 文件。
+Add `--session-id "<session-id>"` to resume a session. Choose either `--prompt` or `--prompt-file`; use a UTF-8 file for longer tasks.
 
-### 调用参数
+### Invocation options
 
-| 参数 | 说明 |
+| Option | Description |
 |---|---|
-| `--dir` | 会话工作目录，必填 |
-| `--session-id` | 继续已有会话时使用的准确 ID |
-| `--prompt` / `--prompt-file` | 直接提示或 UTF-8 提示文件 |
-| `--grok` | 指定 Grok 可执行文件 |
-| `--model` | 本次调用使用的模型 ID |
-| `--agent` | Agent 名称或文件 |
-| `--reasoning-effort` | 本次调用的推理强度 |
-| `--permission-mode` | Grok 权限模式 |
-| `--always-approve` | 自动批准本次调用中的工具执行 |
-| `--max-turns` | 限制无头调用轮数 |
-| `--timeout` | 本次调用超时秒数 |
-| `--log-dir` | 保存调用日志的目录 |
+| `--dir` | Session working directory; required |
+| `--session-id` | Exact ID when resuming a session |
+| `--prompt` / `--prompt-file` | Direct prompt or UTF-8 prompt file |
+| `--grok` | Grok executable path |
+| `--model` | Model ID for this invocation |
+| `--agent` | Agent name or file |
+| `--reasoning-effort` | Reasoning effort for this invocation |
+| `--permission-mode` | Grok permission mode |
+| `--always-approve` | Approve tool execution for this invocation |
+| `--max-turns` | Limit headless turns |
+| `--timeout` | Timeout in seconds |
+| `--log-dir` | Invocation log directory |
 
-`--always-approve` 与 `--permission-mode` 同时出现时，辅助脚本优先传入 `--always-approve`。指定目录已经包含 `stdout.log`、`stderr.log` 或 `debug.log` 时，脚本会停止并报告冲突。
+When both are supplied, `--always-approve` takes precedence over `--permission-mode`. If the selected directory already contains `stdout.log`, `stderr.log`, or `debug.log`, the helper stops and reports the conflict.
 
-成功输出包含 `session_id`、`created_session`、`actual_models`、`reply`、`stop_reason` 和 `log_dir`。显示模型、JSON 中的实际模型和会话 Agent 名称可能不同，应分别记录。
+Successful output includes `session_id`, `created_session`, `actual_models`, `reply`, `stop_reason`, and `log_dir`. The displayed model, model reported by JSON usage, and session agent name may differ; record each source separately.
 
 ## `smoke-test`
 
@@ -89,8 +89,8 @@ python $helper invoke `
 python $helper smoke-test --dir "C:\path\to\safe-dir" --json
 ```
 
-它会创建一次单轮会话，验证固定回复和实际模型，再使用准确 ID 删除该会话。可使用 `--model`、`--reasoning-effort`、`--timeout`、`--grok` 或 `--log-dir` 检查特定配置。
+This creates one single-turn session, validates the fixed reply and actual model, then deletes the exact ID. Use `--model`, `--reasoning-effort`, `--timeout`, `--grok`, or `--log-dir` to check a specific configuration.
 
-## 默认参数
+## Defaults
 
-请求超时、测试超时、上下文提醒值和固定测试回复保存在 [`references/defaults.json`](../references/defaults.json)。修改后应重新运行 Python 编译检查、Skill 校验和真实冒烟测试。
+Request timeout, smoke-test timeout, context reminder, and expected reply live in [`references/defaults.json`](../references/defaults.json). After changing them, rerun Python compilation, Skill validation, and a real smoke test.

@@ -1,79 +1,83 @@
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="Codex Grok Build Session — controlled local Grok CLI collaboration with observable session state">
+  <img src="./assets/readme/hero.svg" width="100%" alt="Codex Grok Build Session Control — controlled Grok CLI collaboration for Codex">
 </p>
 
 <p align="center">
-  <a href="./docs/getting-started.md">快速开始</a> ·
-  <a href="./docs/commands.md">命令手册</a> ·
-  <a href="./docs/session-lifecycle.md">会话生命周期</a> ·
-  <a href="./docs/troubleshooting.md">故障诊断</a> ·
-  <a href="./SKILL.md">Skill 说明</a>
+  <strong>English</strong> · <a href="./README.zh-CN.md">简体中文</a>
+</p>
+
+<p align="center">
+  <a href="./docs/getting-started.md">Quick start</a> ·
+  <a href="./docs/commands.md">Command reference</a> ·
+  <a href="./docs/session-lifecycle.md">Session lifecycle</a> ·
+  <a href="./docs/troubleshooting.md">Troubleshooting</a> ·
+  <a href="./SKILL.md">Skill instructions</a>
 </p>
 
 # Codex Grok Build Session
 
-让 Codex 通过本机 Grok Build CLI 创建、继续、监督并验证编码会话。它将工作目录、session ID、事件、上下文和日志组织成可检查的协作流程，同时保留 Grok 原生会话。
+Use Codex to create, resume, supervise, and verify local Grok Build CLI sessions. The skill turns working directories, session IDs, events, context usage, and logs into an inspectable collaboration workflow while preserving Grok's native sessions.
 
-> 适用于 Windows、PowerShell、Codex Skills 与本机 Grok Build CLI。当前实现已经在 Grok 1.0.5 上完成真实调用测试；运行时仍以本机 `grok --help` 和 `grok models` 为准。
+> Designed for Windows, PowerShell, Codex Skills, and the local Grok Build CLI. The current implementation has been exercised against Grok 1.0.5; runtime behavior still follows your local `grok --help` and `grok models` output.
 
-## 它解决什么问题
+## What it solves
 
-直接启动外部编码 Agent 很容易遇到四类麻烦：继续了错误会话、工作目录不一致、进程退出但工具仍在执行、上下文读数判断错误。这个 Skill 为 Codex 提供一套可复查的操作方式：
+Directly launching an external coding agent often creates four recurring problems: resuming the wrong session, using a mismatched working directory, treating process exit as completed work, and reading context usage incorrectly. This skill gives Codex a reviewable operating method:
 
-- 根据准确工作目录查找会话，并核验 session ID 的归属。
-- 创建或继续无头 Grok 会话，保存 prompt、stdout、stderr 与 debug 日志。
-- 结合 `turn_completed`、待处理工具调用、文件稳定性、进程和端口判断执行状态。
-- 从 `signals.json` 与最新事件读取上下文，达到提醒值后单独执行 `/compact`。
-- 在 Grok 更新后运行真实冒烟测试，并删除本次创建的测试会话。
-- Grok 完成实现后，由 Codex 独立检查差异、构建、测试、网页和截图。
+- Find sessions by their exact owner directory and verify session ID ownership.
+- Create or resume headless Grok sessions while retaining prompt, stdout, stderr, and debug logs.
+- Combine `turn_completed`, pending tool calls, file stability, processes, and ports when judging activity.
+- Read context from `signals.json` and recent events, then send `/compact` as a separate turn when needed.
+- Run a real smoke test after Grok updates and remove only the test session created by that run.
+- Let Codex independently inspect diffs, builds, tests, web pages, and screenshots after Grok implements a task.
 
-## 工作方式
+## How it works
 
 <p align="center">
   <img src="./assets/readme/session-workflow.svg" width="100%" alt="Four-stage workflow: diagnose, invoke, observe, and verify a Grok Build session">
 </p>
 
-1. **Diagnose**：检查 CLI、模型、doctor、会话目录与活动 PID。
-2. **Invoke**：在用户指定目录创建会话，或使用准确 ID 继续已有会话。
-3. **Observe**：读取状态文件、事件、上下文和日志，判断是否需要继续或压缩。
-4. **Verify**：检查实际代码差异并运行项目自己的验证命令。
+1. **Diagnose** — inspect the CLI, models, doctor output, session store, and active PIDs.
+2. **Invoke** — create a session in an authorized directory or resume an exact ID.
+3. **Observe** — read state files, events, context, and logs before deciding what happens next.
+4. **Verify** — inspect the repository and run the project's own verification commands.
 
-## 五分钟开始使用
+## Five-minute quick start
 
-### 1. 安装
+### 1. Install
 
-需要 Python 3.10+、已经安装并登录的 Grok Build CLI，以及支持 Skills 的 Codex。
+You need Python 3.10+, an installed and authenticated Grok Build CLI, and a Codex version that supports Skills.
 
 ```powershell
 git clone https://github.com/ZiChenWang114514/codex-grok-build-skill.git `
   "$env:USERPROFILE\.codex\skills\codex-grok-build"
 ```
 
-如果目标目录已经存在，请先检查其中的本地修改，再选择更新方式。
+If the destination already exists, inspect its local changes before choosing how to update it.
 
-### 2. 检查环境
+### 2. Check the environment
 
 ```powershell
 python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py" `
   status --json
 ```
 
-成功结果会报告 Grok 版本、默认模型、可用模型、关键参数、doctor 结果、会话目录和活动会话。
+A successful result reports the Grok version, default and available models, required flags, doctor status, session store, and active sessions.
 
-### 3. 运行兼容性测试
+### 3. Run the compatibility smoke test
 
-首次安装或 Grok 更新后，可以在安全目录中创建一次短会话：
+After first installation or a Grok update, create one short session in a safe directory:
 
 ```powershell
 python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py" `
   smoke-test --dir "C:\path\to\safe-dir" --json
 ```
 
-测试会禁用工具、子 Agent、规划与网页搜索。精确回复和实际模型通过检查后，本次测试会话与默认临时日志会被删除。
+The test disables tools, subagents, planning, and web search. After validating the exact reply and actual model, it removes the test session and its default temporary logs.
 
-### 4. 创建编码会话
+### 4. Create a coding session
 
-将较长任务保存为 UTF-8 文本：
+Save a longer task as a UTF-8 text file:
 
 ```powershell
 python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py" `
@@ -81,7 +85,7 @@ python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py"
   --prompt-file "C:\path\to\phase.txt" --json
 ```
 
-返回结果包含 `session_id`、实际模型、回复、停止原因与日志目录。继续同一会话时，必须使用它原来的工作目录：
+The response includes `session_id`, actual model usage, reply, stop reason, and log directory. To resume the same session, use its original working directory:
 
 ```powershell
 python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py" `
@@ -90,60 +94,60 @@ python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py"
   --prompt-file "C:\path\to\next-phase.txt" --json
 ```
 
-## 命令一览
+## Command map
 
-| 命令 | 用途 | 是否改变会话 |
+| Command | Purpose | Changes session state |
 |---|---|:---:|
-| `status` | 检查安装、模型、doctor 与活动会话 | 否 |
-| `list` | 按工作目录列出会话 | 否 |
-| `inspect` | 检查一个 session ID 的事件、上下文和 PID | 否 |
-| `wait` | 比较短时间内的会话文件与事件状态 | 否 |
-| `invoke` | 创建或继续 Grok 无头会话 | 是 |
-| `smoke-test` | 创建、验证并删除一次测试会话 | 是，且自动清理 |
+| `status` | Check installation, models, doctor, and active sessions | No |
+| `list` | List sessions owned by an exact working directory | No |
+| `inspect` | Inspect events, context, and PIDs for one session ID | No |
+| `wait` | Compare session files and events across a short interval | No |
+| `invoke` | Create or resume a headless Grok session | Yes |
+| `smoke-test` | Create, validate, and remove one test session | Yes, then cleans up |
 
-完整参数和返回字段见 [命令手册](./docs/commands.md)。
+See the [command reference](./docs/commands.md) for every option and response field.
 
-## 安全行为
+## Operational safety
 
-- 普通调用保留 Grok 会话与日志，便于后续检查。
-- 指定日志目录中已有调用日志时，脚本会拒绝覆盖。
-- 超时后只停止本次脚本启动的进程树，并报告候选会话和日志。
-- 脚本不会自行提交、推送、发布、部署或修改全局 Grok/Claude 配置。
-- `--always-approve` 只在调用者明确传入时生效。
-- 登录信息、代理凭据和认证令牌不应写入 prompt、仓库或公开日志。
+- Normal invocations preserve the Grok session and logs for later inspection.
+- The helper refuses to overwrite standard invocation logs in a user-specified directory.
+- On timeout, it stops only the process tree started by that invocation and reports candidate sessions and logs.
+- The helper does not commit, push, publish, deploy, or change global Grok or Claude configuration by itself.
+- `--always-approve` is added only when the caller explicitly supplies it.
+- Authentication tokens and proxy credentials should never appear in prompts, repositories, or public logs.
 
-## 文档
+## Documentation
 
-| 文档 | 内容 |
+| Document | Covers |
 |---|---|
-| [快速开始](./docs/getting-started.md) | 安装、首次检查、创建和继续会话 |
-| [命令手册](./docs/commands.md) | 全部子命令、常用参数、输出和退出状态 |
-| [会话生命周期](./docs/session-lifecycle.md) | 会话定位、完成判断、上下文与长任务协作 |
-| [故障诊断](./docs/troubleshooting.md) | 启动、网络、超时、warning、进程和日志检查 |
-| [实现说明](./docs/design.md) | 数据来源、辅助脚本职责与安全设计 |
-| [CLI 速查](./references/cli-notes.md) | Grok 1.0.5 参数与版本观察 |
+| [Getting started](./docs/getting-started.md) | Installation, first checks, creating and resuming sessions |
+| [Command reference](./docs/commands.md) | Commands, options, responses, and exit behavior |
+| [Session lifecycle](./docs/session-lifecycle.md) | Session discovery, completion checks, context, and long-running work |
+| [Troubleshooting](./docs/troubleshooting.md) | Startup, networking, timeouts, warnings, processes, and logs |
+| [Design notes](./docs/design.md) | Data sources, helper responsibilities, and safety design |
 
-## 仓库结构
+## Repository layout
 
 ```text
 .
-├── SKILL.md                         # Codex 执行说明
-├── scripts/grok_session.py          # 会话辅助脚本
-├── references/                      # Skill 执行参考与默认值
-├── docs/                            # 面向使用者的文档
-├── assets/readme/                   # README SVG 视觉素材
-├── agents/openai.yaml               # Skill 展示信息
-└── evals/evals.json                 # 行为评测样例
+├── SKILL.md                         # Instructions used by Codex
+├── scripts/grok_session.py          # Session helper
+├── references/                      # Runtime notes and defaults
+├── docs/                            # English documentation
+│   └── zh-CN/                       # Chinese documentation
+├── assets/readme/                   # README SVG assets
+├── agents/openai.yaml               # Skill display metadata
+└── evals/evals.json                 # Behavioral evaluation cases
 ```
 
-## 兼容性
+## Compatibility
 
-- **操作系统**：目前以 Windows PowerShell 为主要验证环境。
-- **Python**：需要 3.10 或更高版本。
-- **Grok CLI**：已验证 1.0.5；不同版本的模型名、参数和会话文件可能变化。
-- **模型选择**：脚本读取 `grok models`，不会把旧模型 ID 固定在代码中。
+- **Operating system** — Windows PowerShell is the primary tested environment.
+- **Python** — 3.10 or newer is required.
+- **Grok CLI** — tested with 1.0.5; model names, flags, and session files may change across versions.
+- **Model selection** — the helper reads `grok models` and does not hard-code a legacy model ID.
 
-发现版本差异时，请附上 `status --json`、`grok --version` 和已经清理敏感信息的相关日志。
+When reporting a version difference, include `status --json`, `grok --version`, and relevant logs after removing sensitive data.
 
 ## License
 

@@ -1,78 +1,78 @@
-# 会话生命周期
+# Session lifecycle
 
-[README](../README.md) · [快速开始](./getting-started.md) · [命令手册](./commands.md) · [故障诊断](./troubleshooting.md)
+[README](../README.md) · [Getting started](./getting-started.md) · [Command reference](./commands.md) · [Troubleshooting](./troubleshooting.md) · [简体中文](./zh-CN/session-lifecycle.md)
 
-Grok 会话可以跨多个无头调用持续存在。可靠协作依赖三个稳定标识：session ID、创建会话时的工作目录、实际开发仓库。
+A Grok session can persist across multiple headless invocations. Reliable collaboration depends on three stable identifiers: session ID, the working directory used when the session was created, and the repository actually being developed.
 
-## 会话存储
+## Session storage
 
 ```text
-%USERPROFILE%\.grok\sessions\<编码后的工作目录>\<session-id>\
+%USERPROFILE%\.grok\sessions\<encoded-working-directory>\<session-id>\
 ```
 
-| 文件 | 主要信息 |
+| File | Primary information |
 |---|---|
-| `summary.json` | 标题、模型、Agent、消息数量和更新时间 |
-| `signals.json` | 上下文、压缩次数、工具统计与 telemetry 状态 |
-| `updates.jsonl` | 事件、工具状态、回复与 `turn_completed` |
-| `chat_history.jsonl` | 对话、推理、工具调用和工具结果 |
+| `summary.json` | Title, model, agent, message count, and timestamps |
+| `signals.json` | Context, compaction count, tool statistics, and telemetry state |
+| `updates.jsonl` | Events, tool states, replies, and `turn_completed` |
+| `chat_history.jsonl` | Conversation, reasoning, tool calls, and tool results |
 
-会话所属工作目录可能与 Grok 实际修改的仓库不同。监督前应检查会话内容和仓库状态，不能只根据目录名称推断任务。
+The owner directory may differ from the repository Grok actually edits. Inspect the session content and repository state before supervision; do not infer the task from the directory name alone.
 
-## 创建阶段
+## Creation stage
 
-创建新会话前：
+Before creating a session:
 
-1. 确认用户授权的工作目录和任务；
-2. 阅读仓库项目指令；
-3. 检查 `git status --short` 与已有差异；
-4. 将较长阶段说明保存为 UTF-8 文件；
-5. 选择只读 `plan` 或已经授权的执行权限。
+1. Confirm the user-authorized working directory and task.
+2. Read applicable repository instructions.
+3. Inspect `git status --short` and existing diffs.
+4. Save longer phase instructions as UTF-8 text.
+5. Choose read-only `plan` or an execution mode already authorized by the user.
 
-阶段说明宜包含目标、已确认事实、允许修改的文件、禁止操作、验证命令和需要检查的页面区域。一次安排一项能够清楚验证的任务。
+A phase prompt should state the objective, confirmed facts, allowed files, prohibited actions, verification commands, and any page regions that need inspection. Assign one clearly verifiable task at a time.
 
-## 运行阶段
+## Running stage
 
-调用成功后保存 session ID、原工作目录、日志目录、本次 prompt 文件及调用时间。发送下一阶段前先运行 `inspect`，继续时使用准确 ID 和原工作目录。
+After a successful invocation, keep the session ID, original working directory, log directory, prompt file, and invocation times. Run `inspect` before sending the next phase. Resume with the exact ID and original working directory.
 
-## 判断一轮是否完成
+## Determining whether a turn is complete
 
-完整判断需要组合以下信息：
+Use the following evidence together:
 
-1. 已出现最终回复或 `turn_completed`；
-2. `pending_tool_call_ids` 为空；
-3. `updates.jsonl` 与 `chat_history.jsonl` 在短时间内保持稳定；
-4. stdout、stderr、debug 没有显示工具仍在执行；
-5. 活动进程、子进程和端口状态符合任务预期；
-6. 仓库差异与验证结果支持 Grok 的完成说明。
+1. A final reply or `turn_completed` exists.
+2. `pending_tool_call_ids` is empty.
+3. `updates.jsonl` and `chat_history.jsonl` remain stable for a short interval.
+4. stdout, stderr, and debug logs show no tools still running.
+5. Active processes, child processes, and ports match the expected task state.
+6. Repository diffs and verification results support Grok's completion claim.
 
-`completion_candidate=true` 与 `stable=true` 只能用于缩小检查范围。Grok 的文字说明、任务清单或退出状态都需要与仓库证据一起判断。
+`completion_candidate=true` and `stable=true` only narrow the inspection. Grok's prose, checklist, or exit status must still be compared with repository evidence.
 
-## 上下文读数
+## Context readings
 
-即时上下文按以下顺序读取：
+Read current context in this order:
 
-1. `signals.json.contextTokensUsed`；
-2. `signals.json.contextWindowUsage` 与 `contextWindowTokens`；
-3. 最新非 `turn_completed` Agent 或工具事件中的 `_meta.totalTokens`。
+1. `signals.json.contextTokensUsed`;
+2. `signals.json.contextWindowUsage` with `contextWindowTokens`;
+3. `_meta.totalTokens` from the latest non-`turn_completed` agent or tool event.
 
-不要累计 debug 日志中的 `input_tokens`，也不要将 `turn_completed` 的整轮累计值视为即时上下文。
+Do not sum debug `input_tokens`, and do not treat the cumulative value on `turn_completed` as current context.
 
-辅助脚本从 `references/defaults.json` 读取提醒值。如果实际窗口小于该值，脚本会使用窗口的 80% 作为较早提醒值，并在检查结果中说明。
+The helper reads the reminder value from `references/defaults.json`. If the actual context window is smaller, it uses 80% of that window as an earlier reminder and reports the decision.
 
 ## `/compact`
 
-达到提醒值后：
+After the reminder is reached:
 
-1. 等待当前阶段完整结束；
-2. 创建只包含 `/compact` 的 UTF-8 提示文件；
-3. 使用同一 session ID 单独调用 `invoke`；
-4. 检查压缩结果；
-5. 确认成功后再发送下一阶段。
+1. Wait for the current phase to finish completely.
+2. Create a UTF-8 prompt containing only `/compact`.
+3. Invoke it separately with the same session ID.
+4. Inspect compaction evidence.
+5. Send the next phase only after compaction is confirmed.
 
-优先确认 `compactionCount` 增加。若 `signals.json` 没有及时刷新，可以组合检查 debug 中的 compact 命令、checkpoint、聊天记录缩短或替换，以及后续事件中的上下文下降。
+Prefer an increased `compactionCount`. If `signals.json` does not refresh promptly, combine debug evidence of the compact command and checkpoint with a shortened or replaced chat history and reduced context in later events.
 
-## 长任务协作
+## Long-running collaboration
 
 ```text
 work/
@@ -85,12 +85,12 @@ work/
     └── phase-03/
 ```
 
-每轮结束后由 Codex 检查准确差异、构建、测试和界面，再根据证据编写下一阶段。不要自动重复超时任务，避免相同修改执行两次。
+After every turn, Codex inspects the exact diff, build, tests, and interface before writing the next phase from evidence. Do not automatically resend a timed-out task, because the same edits may run twice.
 
-## 结束协作
+## Ending collaboration
 
-- 停止发送新阶段；
-- 汇总修改文件、验证结果、已知 warning 和仍需人工决定的事项；
-- 检查本阶段启动的临时服务；
-- 只处理能够确认属于本阶段的进程；
-- 保留正式会话，除非用户明确要求删除。
+- Stop sending new phases.
+- Summarize changed files, verification results, known warnings, and decisions that still require a person.
+- Inspect temporary services started during the phase.
+- Stop only processes that can be attributed to the phase.
+- Preserve the formal session unless the user explicitly asks to delete it.

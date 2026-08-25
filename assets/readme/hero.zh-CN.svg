@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
-  <title id="title">Codex Grok Build Session Control</title>
-  <desc id="desc">A capsule-shaped README header for controlled local Grok CLI collaboration.</desc>
+  <title id="title">Codex Grok Build 会话控制</title>
+  <desc id="desc">为 Codex 提供可检查的本机 Grok CLI 协作流程的胶囊形 README 头图。</desc>
   <defs>
     <clipPath id="capsule-clip">
       <rect x="20" y="20" width="1160" height="300" rx="150"/>
@@ -24,18 +24,18 @@
   <rect x="20" y="20" width="1160" height="300" rx="150" fill="none" stroke="#263A4B" stroke-width="2"/>
 
   <text x="600" y="76" fill="#7DD3FC" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18" letter-spacing="2.4">CODEX SKILL · LOCAL GROK CLI</text>
-  <text x="600" y="145" fill="#F4F4F0" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="58" font-weight="760">Grok Build Session Control</text>
-  <text x="600" y="186" fill="#A9B3C1" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="23">Controlled Grok CLI collaboration for Codex</text>
+  <text x="600" y="145" fill="#F4F4F0" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Microsoft YaHei, PingFang SC, sans-serif" font-size="58" font-weight="760">Grok Build 会话控制</text>
+  <text x="600" y="186" fill="#A9B3C1" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Microsoft YaHei, PingFang SC, sans-serif" font-size="23">为 Codex 提供可检查的 Grok CLI 协作流程</text>
 
   <path d="M360 238H840" stroke="url(#session-trace)" stroke-width="3"/>
-  <g font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="17" text-anchor="middle">
+  <g font-family="ui-monospace, SFMono-Regular, Consolas, Microsoft YaHei, PingFang SC, monospace" font-size="17" text-anchor="middle">
     <circle cx="360" cy="238" r="8" fill="#38BDF8"/>
-    <text x="360" y="274" fill="#B8C4D2">invoke</text>
+    <text x="360" y="274" fill="#B8C4D2">调用</text>
     <circle cx="520" cy="238" r="8" fill="#38BDF8"/>
-    <text x="520" y="274" fill="#B8C4D2">observe</text>
+    <text x="520" y="274" fill="#B8C4D2">观察</text>
     <circle cx="680" cy="238" r="8" fill="#FBBF24"/>
-    <text x="680" y="274" fill="#B8C4D2">compact</text>
+    <text x="680" y="274" fill="#B8C4D2">压缩</text>
     <circle cx="840" cy="238" r="8" fill="#A3E635"/>
-    <text x="840" y="274" fill="#D9F99D">verify</text>
+    <text x="840" y="274" fill="#D9F99D">验证</text>
   </g>
 </svg>
