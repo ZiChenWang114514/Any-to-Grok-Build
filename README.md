@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="Codex Grok Build Session Control — controlled Grok CLI collaboration for Codex">
+  <picture>
+    <source media="(max-width: 680px)" srcset="./assets/readme/hero-mobile.png">
+    <img src="./assets/readme/hero.png" width="100%" alt="Grok Build Session: route work from any compatible harness to the designated Grok Build Harness">
+  </picture>
 </p>
 
 <p align="center">

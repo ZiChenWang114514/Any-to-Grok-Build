@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="./assets/readme/hero.zh-CN.svg" width="100%" alt="Codex Grok Build 会话控制——可检查的本机 Grok CLI 协作流程">
+  <picture>
+    <source media="(max-width: 680px)" srcset="./assets/readme/hero-mobile.png">
+    <img src="./assets/readme/hero.png" width="100%" alt="Grok Build Session：将任意兼容 Harness 连接到指定的 Grok Build Harness">
+  </picture>
 </p>
 
 <p align="center">
