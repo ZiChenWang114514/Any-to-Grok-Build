@@ -2,15 +2,15 @@
 
 [README](../README.md) · [Command reference](./commands.md) · [Session lifecycle](./session-lifecycle.md) · [Troubleshooting](./troubleshooting.md) · [简体中文](./zh-CN/getting-started.md)
 
-This guide follows one complete path: install the skill, check Grok, run the compatibility test, create a session, and resume that exact session.
+This guide follows one complete path: install the adapter, check Grok, run the compatibility test, create a session, and resume that exact session.
 
 ## Prerequisites
 
 - Windows PowerShell;
 - Python 3.10 or newer;
 - an installed and authenticated Grok Build CLI;
-- a Codex version that supports Skills;
 - a working directory that Grok is authorized to read or modify.
+- Codex is optional. Other coding harnesses can run the Python CLI directly.
 
 ```powershell
 python --version
@@ -18,14 +18,14 @@ python --version
 & "$env:USERPROFILE\.grok\bin\grok.exe" models
 ```
 
-## Install the skill
+## Install
 
 ```powershell
-git clone https://github.com/ZiChenWang114514/codex-grok-build-skill.git `
+git clone https://github.com/ZiChenWang114514/Any-to-Grok-Build.git `
   "$env:USERPROFILE\.codex\skills\codex-grok-build"
 ```
 
-After reopening the Codex task, invoke the skill explicitly with `$codex-grok-build`. If the target directory already exists, inspect local changes with `git status --short` before updating it.
+The clone destination is the Codex Skill id, `codex-grok-build`. After reopening a Codex task, invoke `$codex-grok-build`. If the target directory already exists, inspect local changes with `git status --short` before updating it.
 
 ## First status check
 

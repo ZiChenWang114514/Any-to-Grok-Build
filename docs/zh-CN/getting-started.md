@@ -2,15 +2,15 @@
 
 [README](../../README.zh-CN.md) · [命令手册](./commands.md) · [会话生命周期](./session-lifecycle.md) · [故障诊断](./troubleshooting.md) · [English](../getting-started.md)
 
-本页完成一次完整路径：安装 Skill、检查 Grok、运行兼容性测试、创建会话并继续同一会话。
+本页完成一次完整路径：安装适配器、检查 Grok、运行兼容性测试、创建会话并继续同一会话。
 
 ## 前置条件
 
 - Windows PowerShell；
 - Python 3.10 或更高版本；
 - 已经安装并登录的 Grok Build CLI；
-- 支持 Skills 的 Codex；
 - 一个允许 Grok 读取或修改的工作目录。
+- Codex 是可选的。其他编码助手可以直接运行 Python 脚本。
 
 ```powershell
 python --version
@@ -18,14 +18,14 @@ python --version
 & "$env:USERPROFILE\.grok\bin\grok.exe" models
 ```
 
-## 安装 Skill
+## 安装
 
 ```powershell
-git clone https://github.com/ZiChenWang114514/codex-grok-build-skill.git `
+git clone https://github.com/ZiChenWang114514/Any-to-Grok-Build.git `
   "$env:USERPROFILE\.codex\skills\codex-grok-build"
 ```
 
-重新打开 Codex 任务后，可以用 `$codex-grok-build` 明确调用该 Skill。如果本机已有同名目录，先运行 `git status --short` 检查本地修改。
+克隆目标目录是 Codex Skill 标识 `codex-grok-build`。重新打开 Codex 任务后，可以用 `$codex-grok-build` 调用。如果本机已有同名目录，先运行 `git status --short` 检查本地修改。
 
 ## 第一次状态检查
 

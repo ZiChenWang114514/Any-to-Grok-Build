@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(max-width: 680px)" srcset="./assets/readme/hero-mobile.png">
-    <img src="./assets/readme/hero.png" width="100%" alt="Grok Build Session：将任意兼容 Harness 连接到指定的 Grok Build Harness">
+    <img src="./assets/readme/hero.png" width="100%" alt="Any-to-Grok-Build：把任意兼容的编码助手接到本机 Grok Build 会话">
   </picture>
 </p>
 
@@ -17,48 +17,47 @@
   <a href="./SKILL.md">Skill 说明</a>
 </p>
 
-# Codex Grok Build Session
+# Any-to-Grok-Build
 
-让 Codex 通过本机 Grok Build CLI 创建、继续、监督并验证编码会话。它将工作目录、session ID、事件、上下文和日志组织成可检查的协作流程，同时保留 Grok 原生会话。
+把任意兼容的编码助手接到本机 Grok Build 会话。它负责创建、继续、检查和核验无头 Grok CLI 工作，同时保留 Grok 自己的会话文件。
 
-> 适用于 Windows、PowerShell、Codex Skills 与本机 Grok Build CLI。当前实现已经在 Grok 1.0.5 上完成真实调用测试；运行时仍以本机 `grok --help` 和 `grok models` 为准。
+本仓库是本地会话适配器：一套 Python 命令行工具，外加 Codex Skill 封装。它不负责安装 Grok Build，也不是 xAI 官方产品。当前实现已经在 Grok 1.0.5 上完成真实调用；运行时仍以本机 `grok --help` 和 `grok models` 为准。
 
-## 它解决什么问题
+## 它能做什么
 
-直接启动外部编码 Agent 很容易遇到四类麻烦：继续了错误会话、工作目录不一致、进程退出但工具仍在执行、上下文读数判断错误。这个 Skill 为 Codex 提供一套可复查的操作方式：
+- 按准确工作目录查找会话，拒绝在错误目录继续某个 session ID。
+- 创建或继续无头 Grok 会话，并保存 prompt、stdout、stderr 与 debug 日志。
+- 从 `signals.json` 和最近事件读取上下文，需要时单独发送 `/compact`。
+- 结合 `turn_completed`、待处理工具调用、文件稳定性、进程和端口判断一轮是否结束。
+- 在 Grok 更新后运行真实冒烟测试，并只删除本次创建的测试会话。
 
-- 根据准确工作目录查找会话，并核验 session ID 的归属。
-- 创建或继续无头 Grok 会话，保存 prompt、stdout、stderr 与 debug 日志。
-- 结合 `turn_completed`、待处理工具调用、文件稳定性、进程和端口判断执行状态。
-- 从 `signals.json` 与最新事件读取上下文，达到提醒值后单独执行 `/compact`。
-- 在 Grok 更新后运行真实冒烟测试，并删除本次创建的测试会话。
-- Grok 完成实现后，由 Codex 独立检查差异、构建、测试、网页和截图。
+Codex、Claude Code、OpenCode 等工具都可以直接调用 Python 脚本。安装 Skill 后，Codex 也可以使用 `$codex-grok-build`。
 
 ## 工作方式
 
 <p align="center">
-  <img src="./assets/readme/session-workflow.svg" width="100%" alt="Four-stage workflow: diagnose, invoke, observe, and verify a Grok Build session">
+  <img src="./assets/readme/session-workflow.svg" width="100%" alt="四个阶段：诊断、调用、观察，再独立核验 Grok Build 会话">
 </p>
 
 1. **Diagnose**：检查 CLI、模型、doctor、会话目录与活动 PID。
-2. **Invoke**：在用户指定目录创建会话，或使用准确 ID 继续已有会话。
-3. **Observe**：读取状态文件、事件、上下文和日志，判断是否需要继续或压缩。
-4. **Verify**：检查实际代码差异并运行项目自己的验证命令。
+2. **Invoke**：在指定目录创建会话，或使用准确 ID 继续已有会话。
+3. **Observe**：读取状态文件、事件、上下文和日志，再决定下一步。
+4. **Verify**：检查实际代码差异，并运行项目自己的验证命令。
 
-## 五分钟开始使用
+## 安装
 
-### 1. 安装
-
-需要 Python 3.10+、已经安装并登录的 Grok Build CLI，以及支持 Skills 的 Codex。
+需要 Python 3.10 或更高版本，以及已经安装并登录的 Grok Build CLI。
 
 ```powershell
-git clone https://github.com/ZiChenWang114514/codex-grok-build-skill.git `
+git clone https://github.com/ZiChenWang114514/Any-to-Grok-Build.git `
   "$env:USERPROFILE\.codex\skills\codex-grok-build"
 ```
 
-如果目标目录已经存在，请先检查其中的本地修改，再选择更新方式。
+克隆目标目录是 Codex Skill 标识 `codex-grok-build`。如果该目录已经存在，请先检查本地修改再更新。其他编码助手可以直接运行 `scripts/grok_session.py`。
 
-### 2. 检查环境
+## 五分钟开始使用
+
+### 1. 检查环境
 
 ```powershell
 python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py" `
@@ -67,18 +66,18 @@ python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py"
 
 成功结果会报告 Grok 版本、默认模型、可用模型、关键参数、doctor 结果、会话目录和活动会话。
 
-### 3. 运行兼容性测试
+### 2. 运行兼容性测试
 
-首次安装或 Grok 更新后，可以在安全目录中创建一次短会话：
+首次安装或 Grok 更新后，在安全目录中创建一次短会话：
 
 ```powershell
 python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py" `
   smoke-test --dir "C:\path\to\safe-dir" --json
 ```
 
-测试会禁用工具、子 Agent、规划与网页搜索。精确回复和实际模型通过检查后，本次测试会话与默认临时日志会被删除。
+测试会禁用工具、子 Agent、规划与网页搜索。精确回复和实际模型通过后，本次测试会话与默认临时日志会被删除。
 
-### 4. 创建编码会话
+### 3. 创建编码会话
 
 将较长任务保存为 UTF-8 文本：
 
@@ -88,7 +87,7 @@ python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py"
   --prompt-file "C:\path\to\phase.txt" --json
 ```
 
-返回结果包含 `session_id`、实际模型、回复、停止原因与日志目录。继续同一会话时，必须使用它原来的工作目录：
+返回结果包含 `session_id`、实际模型、回复、停止原因与日志目录。继续同一会话时使用原来的工作目录：
 
 ```powershell
 python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py" `
@@ -110,11 +109,20 @@ python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py"
 
 完整参数和返回字段见 [命令手册](./docs/zh-CN/commands.md)。
 
+## 在编码助手中使用
+
+```text
+使用 $codex-grok-build，在 C:\path\to\repo 检查状态，
+然后开一个会话，分析失败的测试并报告可能原因，先不要改文件。
+```
+
+请求里写任务、目录和权限模式。会话身份、日志和 JSON 输出由适配器处理。
+
 ## 安全行为
 
 - 普通调用保留 Grok 会话与日志，便于后续检查。
 - 指定日志目录中已有调用日志时，脚本会拒绝覆盖。
-- 超时后只停止本次脚本启动的进程树，并报告候选会话和日志。
+- 超时后只停止本次脚本启动的进程树。
 - 脚本不会自行提交、推送、发布、部署或修改全局 Grok/Claude 配置。
 - `--always-approve` 只在调用者明确传入时生效。
 - 登录信息、代理凭据和认证令牌不应写入 prompt、仓库或公开日志。
@@ -129,20 +137,6 @@ python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py"
 | [故障诊断](./docs/zh-CN/troubleshooting.md) | 启动、网络、超时、warning、进程和日志检查 |
 | [实现说明](./docs/zh-CN/design.md) | 数据来源、辅助脚本职责与安全设计 |
 
-## 仓库结构
-
-```text
-.
-├── SKILL.md                         # Codex 执行说明
-├── scripts/grok_session.py          # 会话辅助脚本
-├── references/                      # Skill 执行参考与默认值
-├── docs/                            # 英文文档
-│   └── zh-CN/                       # 中文文档
-├── assets/readme/                   # README SVG 视觉素材
-├── agents/openai.yaml               # Skill 展示信息
-└── evals/evals.json                 # 行为评测样例
-```
-
 ## 兼容性
 
 - **操作系统**：目前以 Windows PowerShell 为主要验证环境。
@@ -151,6 +145,15 @@ python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py"
 - **模型选择**：脚本读取 `grok models`，不会把旧模型 ID 固定在代码中。
 
 发现版本差异时，请附上 `status --json`、`grok --version` 和已经清理敏感信息的相关日志。
+
+## 同系列适配器
+
+| 仓库 | 目标 |
+| --- | --- |
+| [Any-to-OpenCode](https://github.com/ZiChenWang114514/Any-to-OpenCode) | OpenCode |
+| [Any-to-Kimi-Code](https://github.com/ZiChenWang114514/Any-to-Kimi-Code) | Kimi Code |
+| [Any-to-ZCode](https://github.com/ZiChenWang114514/Any-to-ZCode) | ZCode / GLM |
+| [Any-to-DeepSeek-Harness](https://github.com/ZiChenWang114514/Any-to-DeepSeek-Harness) | DeepSeek Harness |
 
 ## 许可证
 
