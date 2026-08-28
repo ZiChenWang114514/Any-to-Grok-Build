@@ -14,6 +14,7 @@ PROJECTS = (
     "Any-to-Codex",
     "Any-to-Claude-Code",
     "Any-to-Pi",
+    "Any-to-Antigravity",
 )
 
 
