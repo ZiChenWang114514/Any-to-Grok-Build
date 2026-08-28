@@ -13,6 +13,7 @@ PROJECTS = (
     "Any-to-DeepSeek-Harness",
     "Any-to-Codex",
     "Any-to-Claude-Code",
+    "Any-to-Pi",
 )
 
 
@@ -57,4 +58,3 @@ class RepositoryContractTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

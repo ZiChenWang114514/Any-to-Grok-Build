@@ -160,6 +160,7 @@ python "$env:USERPROFILE\.codex\skills\codex-grok-build\scripts\grok_session.py"
 | [Any-to-DeepSeek-Harness](https://github.com/ZiChenWang114514/Any-to-DeepSeek-Harness) | DeepSeek Harness |
 | [Any-to-Codex](https://github.com/ZiChenWang114514/Any-to-Codex) | Codex CLI |
 | [Any-to-Claude-Code](https://github.com/ZiChenWang114514/Any-to-Claude-Code) | Claude Code |
+| [Any-to-Pi](https://github.com/ZiChenWang114514/Any-to-Pi) | Pi |
 
 ## 许可证
 
