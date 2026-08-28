@@ -27,7 +27,8 @@ jobs:
           foreach ($case in $cases) {
             $source = (Resolve-Path -LiteralPath $case.Source).Path.Replace("\\", "/")
             $output = Join-Path $PWD $case.Output
-            & $edge --headless=new --disable-gpu --hide-scrollbars ("--window-size=" + $case.Size) ("--screenshot=" + $output) ("file:///" + $source)
-            for ($attempt = 0; $attempt -lt 20 -and !(Test-Path -LiteralPath $output); $attempt++) { Start-Sleep -Milliseconds 250 }
+            $profile = Join-Path $env:RUNNER_TEMP ("edge-profile-" + [guid]::NewGuid())
+            & $edge --headless=new --disable-gpu --hide-scrollbars ("--user-data-dir=" + $profile) ("--window-size=" + $case.Size) ("--screenshot=" + $output) ("file:///" + $source)
+            for ($attempt = 0; $attempt -lt 120 -and !(Test-Path -LiteralPath $output); $attempt++) { Start-Sleep -Milliseconds 250 }
             if (!(Test-Path -LiteralPath $output)) { throw "SVG render failed: $($case.Source)" }
           }
