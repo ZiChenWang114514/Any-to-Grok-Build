@@ -1,41 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
   <title id="title">Any-to-Grok-Build</title>
-  <desc id="desc">Route work from any compatible harness to local Grok Build sessions.</desc>
+  <desc id="desc">Route work from any compatible coding harness to an exact Grok Build session.</desc>
   <defs>
-    <clipPath id="capsule-clip">
-      <rect x="20" y="20" width="1160" height="300" rx="150"/>
-    </clipPath>
-    <pattern id="session-grid" width="32" height="32" patternUnits="userSpaceOnUse">
-      <path d="M32 0H0V32" fill="none" stroke="#1B2A38" stroke-width="1"/>
-    </pattern>
-    <linearGradient id="session-trace" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#38BDF8"/>
-      <stop offset="0.68" stop-color="#38BDF8"/>
-      <stop offset="1" stop-color="#A3E635"/>
-    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#070B12"/><stop offset="1" stop-color="#111827"/></linearGradient>
+    <linearGradient id="trace" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#38BDF8"/><stop offset="1" stop-color="#A3E635"/></linearGradient>
   </defs>
-
-  <g clip-path="url(#capsule-clip)">
-    <rect x="20" y="20" width="1160" height="300" fill="#080B10"/>
-    <rect x="20" y="20" width="1160" height="300" fill="url(#session-grid)" opacity="0.58"/>
-    <circle cx="80" cy="170" r="150" fill="#0B2030" opacity="0.65"/>
-    <circle cx="1120" cy="170" r="150" fill="#13220B" opacity="0.55"/>
+  <rect width="1200" height="420" rx="30" fill="url(#bg)"/>
+  <path d="M0 78H1200M706 78V420" stroke="#273244"/>
+  <g font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18">
+    <circle cx="58" cy="39" r="6" fill="#A3E635"/><text x="76" y="46" fill="#9CA3AF">ANY-TO HARNESS ADAPTER</text>
+    <text x="1140" y="46" text-anchor="end" fill="#38BDF8">GROK 4.6 · GROK 4.5</text>
   </g>
-  <rect x="20" y="20" width="1160" height="300" rx="150" fill="none" stroke="#263A4B" stroke-width="2"/>
-
-  <text x="600" y="76" fill="#7DD3FC" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="18" letter-spacing="2.4">HARNESS INTERCONNECT · GROK BUILD</text>
-  <text x="600" y="145" fill="#F4F4F0" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="58" font-weight="760">Grok Build Session</text>
-  <text x="600" y="186" fill="#A9B3C1" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="23">Route any compatible harness to local Grok Build</text>
-
-  <path d="M360 238H840" stroke="url(#session-trace)" stroke-width="3"/>
-  <g font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="17" text-anchor="middle">
-    <circle cx="360" cy="238" r="8" fill="#38BDF8"/>
-    <text x="360" y="274" fill="#B8C4D2">invoke</text>
-    <circle cx="520" cy="238" r="8" fill="#38BDF8"/>
-    <text x="520" y="274" fill="#B8C4D2">observe</text>
-    <circle cx="680" cy="238" r="8" fill="#FBBF24"/>
-    <text x="680" y="274" fill="#B8C4D2">compact</text>
-    <circle cx="840" cy="238" r="8" fill="#A3E635"/>
-    <text x="840" y="274" fill="#D9F99D">verify</text>
+  <g transform="translate(58 126)" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">
+    <text x="0" y="0" fill="#F8FAFC" font-size="59" font-weight="760">Any-to</text>
+    <text x="0" y="68" fill="#A3E635" font-size="59" font-weight="760">Grok Build</text>
+    <text x="0" y="124" fill="#CBD5E1" font-size="25">Send work from any compatible harness.</text>
+    <text x="0" y="160" fill="#CBD5E1" font-size="25">Keep the exact workspace, model, and session.</text>
+  </g>
+  <g transform="translate(748 105)">
+    <rect width="394" height="270" rx="22" fill="#0A1220" stroke="#334155" stroke-width="2"/>
+    <g transform="translate(275 22)" color="#A3E635"><svg width="88" height="88" viewBox="0 0 1000 1000" fill="currentColor"><title id="title">Grok mark</title>
+  <desc id="desc">Vector interpretation of the user-provided Grok logo.</desc>
+  <path fill="currentColor" fill-rule="evenodd" d="M500 160c-188 0-340 152-340 340 0 64 18 124 48 176 18 32 13 73-11 101L40 944l292-263c-46-48-74-112-74-181 0-142 116-258 258-258 38 0 75 8 108 23l90-40A338 338 0 0 0 500 160Zm-188 628 104-49c32 13 66 19 100 19 142 0 258-116 258-258 0-38-8-75-23-108L960 56 394 626l294-222c25-19 61-9 72 20 9 25 14 51 14 76 0 142-116 258-258 258-35 0-70-7-102-21l-102 51Z"/></svg></g>
+    <text x="26" y="51" fill="#94A3B8" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="17">ROUTE</text>
+    <text x="26" y="84" fill="#F8FAFC" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="29" font-weight="700">Grok Build</text>
+    <path d="M50 164H344" stroke="url(#trace)" stroke-width="4" stroke-linecap="round"/>
+    <g font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="17" text-anchor="middle">
+      <circle cx="50" cy="164" r="9" fill="#38BDF8"/><text x="50" y="202" fill="#CBD5E1">any harness</text>
+      <circle cx="197" cy="164" r="9" fill="#F8FAFC"/><text x="197" y="202" fill="#CBD5E1">adapter</text>
+      <circle cx="344" cy="164" r="9" fill="#A3E635"/><text x="344" y="202" fill="#CBD5E1">exact session</text>
+    </g>
+    <text x="197" y="246" text-anchor="middle" fill="#38BDF8" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="17">STATUS · INVOKE · SMOKE TEST</text>
   </g>
 </svg>

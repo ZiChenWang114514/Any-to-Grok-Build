@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Grok mark</title>
+  <desc id="desc">Vector interpretation of the user-provided Grok logo.</desc>
+  <path fill="currentColor" fill-rule="evenodd" d="M500 160c-188 0-340 152-340 340 0 64 18 124 48 176 18 32 13 73-11 101L40 944l292-263c-46-48-74-112-74-181 0-142 116-258 258-258 38 0 75 8 108 23l90-40A338 338 0 0 0 500 160Zm-188 628 104-49c32 13 66 19 100 19 142 0 258-116 258-258 0-38-8-75-23-108L960 56 394 626l294-222c25-19 61-9 72 20 9 25 14 51 14 76 0 142-116 258-258 258-35 0-70-7-102-21l-102 51Z"/>
+</svg>

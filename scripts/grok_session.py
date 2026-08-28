@@ -752,7 +752,7 @@ def build_parser() -> argparse.ArgumentParser:
     status_parser.add_argument("--json", action="store_true")
 
     list_parser = subparsers.add_parser("list", help="List sessions for an exact work directory")
-    list_parser.add_argument("--dir", required=True)
+    list_parser.add_argument("--dir", "--workdir", dest="dir", required=True)
     list_parser.add_argument("--limit", type=int, default=20)
     list_parser.add_argument("--json", action="store_true")
 
@@ -770,7 +770,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("smoke-test", "Run and delete a temporary compatibility session"),
     ):
         command_parser = subparsers.add_parser(name, help=help_text)
-        command_parser.add_argument("--dir", required=True)
+        command_parser.add_argument("--dir", "--workdir", dest="dir", required=True)
         command_parser.add_argument("--grok")
         command_parser.add_argument("--model")
         command_parser.add_argument("--agent")
@@ -792,6 +792,25 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def any_to_payload(result: dict[str, Any], command: str) -> dict[str, Any]:
+    payload = dict(result)
+    payload.setdefault("schema_version", 1)
+    payload.setdefault("target", "grok-build")
+    payload.setdefault("command", command)
+    payload.setdefault("provider", "xai")
+    payload.setdefault("workdir", payload.get("directory") or payload.get("cwd"))
+    payload.setdefault("session_id", payload.get("session_id"))
+    payload.setdefault("requested_model", payload.get("requested_model") or payload.get("default_model"))
+    payload.setdefault("actual_model", payload.get("actual_model") or payload.get("model"))
+    actual_models = payload.get("actual_models") or []
+    if not payload.get("actual_model") and len(actual_models) == 1:
+        payload["actual_model"] = actual_models[0]
+    payload.setdefault("result", payload.get("response"))
+    payload.setdefault("warnings", [])
+    payload.setdefault("error", None)
+    return payload
+
+
 def main() -> int:
     args = build_parser().parse_args()
     try:
@@ -807,10 +826,14 @@ def main() -> int:
             result = wait_payload(args)
         else:
             result = invoke_payload(args, smoke_test=args.command == "smoke-test")
+        if args.json:
+            result = any_to_payload(result, args.command)
         emit(result, args.json)
         return 0 if result.get("ok") else 1
     except Exception as exc:
         payload = {"ok": False, "error": str(exc)}
+        if getattr(args, "json", False):
+            payload = any_to_payload(payload, args.command)
         emit(payload, getattr(args, "json", False))
         return 1
 

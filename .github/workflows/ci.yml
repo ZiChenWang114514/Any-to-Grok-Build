@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m py_compile scripts/grok_session.py
+      - run: python -m unittest discover -s tests -v
+      - name: Render README heroes
+        shell: pwsh
+        run: |
+          $edge = "${env:ProgramFiles(x86)}\\Microsoft\\Edge\\Application\\msedge.exe"
+          if (!(Test-Path -LiteralPath $edge)) { throw "Microsoft Edge is unavailable" }
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          $cases = @(
+            @{Source="assets/readme/hero.svg"; Output="artifacts/hero-desktop.png"; Size="900,315"},
+            @{Source="assets/readme/hero-mobile.svg"; Output="artifacts/hero-mobile.png"; Size="360,360"}
+          )
+          foreach ($case in $cases) {
+            $source = (Resolve-Path -LiteralPath $case.Source).Path.Replace("\\", "/")
+            & $edge --headless=new --disable-gpu --hide-scrollbars ("--window-size=" + $case.Size) ("--screenshot=" + $case.Output) ("file:///" + $source)
+            for ($attempt = 0; $attempt -lt 20 -and !(Test-Path -LiteralPath $case.Output); $attempt++) { Start-Sleep -Milliseconds 250 }
+            if (!(Test-Path -LiteralPath $case.Output)) { throw "SVG render failed: $($case.Source)" }
+          }

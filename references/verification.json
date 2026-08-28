@@ -1,0 +1,11 @@
+{
+  "verified_at": "2026-08-28T17:16:56+08:00",
+  "cli_version": "1.0.5",
+  "status": "passed",
+  "models": [
+    {"requested": "grok-4.6", "actual": "grok-4.6-build", "smoke_test": true},
+    {"requested": "grok-4.5", "actual": "grok-4.5-build", "smoke_test": true}
+  ],
+  "exact_session_resume": true,
+  "test_sessions_deleted": true
+}
